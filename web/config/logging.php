@@ -6,6 +6,12 @@ use Monolog\Handler\SyslogUdpHandler;
 
 return [
 
+    'custom_types' => [
+        "billing" => true,
+        "webhooks" => true,
+        "metafields" => true,
+        "routes" => true
+    ],
     /*
     |--------------------------------------------------------------------------
     | Default Log Channel
@@ -43,8 +49,13 @@ return [
 
         'single' => [
             'driver' => 'single',
-            'path' => storage_path('logs/laravel.log'),
+            'path' => storage_path('logs/' . date('l') . '.log'),
             'level' => env('LOG_LEVEL', 'debug'),
+        ],
+
+        'custom' => [
+            'driver' => 'custom',
+            'via' => "App\Logging\CreateCustomLogger@handler",
         ],
 
         'daily' => [
@@ -98,7 +109,7 @@ return [
         ],
 
         'emergency' => [
-            'path' => storage_path('logs/laravel.log'),
+            'path' => storage_path('logs/emergency/' . date("l") . '.log'),
         ],
     ],
 

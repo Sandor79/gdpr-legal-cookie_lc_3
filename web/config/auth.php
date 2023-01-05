@@ -61,10 +61,10 @@ return [
     */
 
     'providers' => [
-//        'users' => [
-//            'driver' => 'eloquent',
-//            'model' => App\Models\User::class,
-//        ],
+        'users' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Shop::class,
+        ],
 
         // 'users' => [
         //     'driver' => 'database',

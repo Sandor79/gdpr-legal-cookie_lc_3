@@ -36,7 +36,7 @@ export default function PageName() {
           <Card sectioned>
             <Heading>Heading</Heading>
             <TextContainer>
-              <p>Body</p>
+              <p>{import.meta.env.APP_KEY}</p>
             </TextContainer>
           </Card>
         </Layout.Section>

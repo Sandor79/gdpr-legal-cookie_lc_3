@@ -8,13 +8,56 @@ import {
   Link,
   Heading,
 } from "@shopify/polaris";
-import { TitleBar } from "@shopify/app-bridge-react";
+import {TitleBar, useAppBridge} from "@shopify/app-bridge-react";
+import {Loading} from "@shopify/app-bridge/actions";
 
 import { trophyImage } from "../assets";
 
 import { ProductsCard } from "../components";
+import {useEffect, useState} from "react";
+import {useAppQuery} from "../hooks";
+import LOGGER from "../components/app/Helpers/Logger";
 
 export default function HomePage() {
+    const app = useAppBridge();
+    const loading = Loading.create( app );
+
+    const [webhookRegistryLoaded, setWebhookRegistryLoaded] = useState(false)
+
+    const apiCallInstall = function () {
+
+    }
+
+    const stopLoading = function () {
+        loading.dispatch( Loading.Action.STOP);
+    }
+    useEffect(() => stopLoading(),[] );
+
+    useEffect(()=>{
+        console.log( loading );
+
+        if ( !!loading ) {
+            setWebhookRegistryLoaded( !webhookRegistryLoaded );
+            const {data} = useAppQuery({
+                url: `/api/webhooks/check-registry`,
+                fetchInit: {
+                    method: 'GET',
+                    mode: 'cors',
+                    cache: 'default',
+                },
+                reactQueryOptions: {
+                    onSuccess: () => {
+                        setWebhookRegistryLoaded(!webhookRegistryLoaded);
+                        LOGGER.LOG("useAppQuery")
+                    },
+                },
+            });
+            console.log(data)
+        }
+    }, [loading])
+
+
+
   return (
     <Page narrowWidth>
       <TitleBar title="App name" primaryAction={null} />

@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Exceptions\ShopifyBillingException;
+use App\Http\Controllers\BillingController;
 use App\Lib\AuthRedirection;
 use App\Lib\EnsureBilling;
 use App\Lib\TopLevelRedirection;
@@ -61,17 +62,15 @@ class EnsureShopifySession
         if ($session && $session->isValid()) {
             if (Config::get('shopify.billing.required')) {
                 // The request to check billing status serves to validate that the access token is still valid.
-                try {
-                    list($hasPayment, $confirmationUrl) =
-                        EnsureBilling::check($session, Config::get('shopify.billing'));
-                    $proceed = true;
 
-                    if (!$hasPayment) {
-                        return TopLevelRedirection::redirect($request, $confirmationUrl);
-                    }
-                } catch (ShopifyBillingException $e) {
-                    $proceed = false;
+                list($hasPayment, $confirmationUrl) =
+                    BillingController::checkWebCall($session, $request);
+                $proceed = true;
+
+                if (!$hasPayment) {
+                    return TopLevelRedirection::redirect($request, $confirmationUrl);
                 }
+
             } else {
                 // Make a request to ensure the access token is still valid. Otherwise, re-authenticate the user.
                 $client = new Graphql($session->getShop(), $session->getAccessToken());

@@ -6,6 +6,7 @@ namespace App\Lib;
 
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Shopify\Auth\OAuth;
 use Shopify\Context;
 use Shopify\Utils;
@@ -14,7 +15,13 @@ class AuthRedirection
 {
     public static function redirect(Request $request, bool $isOnline = false): RedirectResponse
     {
-        $shop = Utils::sanitizeShopDomain($request->query("shop"));
+        Log::debug(
+            print_r($request->getQueryString(), true),
+            ["redirect => request", __LINE__, (explode('/web/', __FILE__)[1]) ]
+        );
+
+        $query = $request->query("shop") || "";
+        $shop = Utils::sanitizeShopDomain((string)$query);
 
         if (Context::$IS_EMBEDDED_APP && $request->query("embedded", false) === "1") {
             $redirectUrl = self::clientSideRedirectUrl($shop, $request->query());

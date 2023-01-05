@@ -57,7 +57,7 @@ class CspHeader
         }
 
 
-        $response->headers->set('Content-Security-Policy', $headerValue);
+        $response->headers->set('Content-Security-Policy', "$headerValue");
 
         return $response;
     }
