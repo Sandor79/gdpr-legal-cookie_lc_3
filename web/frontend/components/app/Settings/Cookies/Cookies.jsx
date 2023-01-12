@@ -2,9 +2,30 @@ import {useCallback, useMemo, useState} from "react";
 import {Button, Card, ResourceList, ResourceItem, Text, Modal, Stack, TextField, Select} from "@shopify/polaris";
 import LOGGER from "../../Helpers/Logger";
 import {Toast} from "@shopify/app-bridge-react";
-import MetafieldController from "../../Helpers/MetafieldController";
+import MetafieldController from "../../Controllers/MetafieldController/MetafieldController";
+import sort from "../../Helpers/sort";
+import { cookieSchema } from "./cookieDataSchema";
+import RessourcesCookieListSkeleton from "./RessourcesCookieListSkeleton";
+import {useDispatch, useSelector} from "react-redux";
+import {getMetafield} from "../../../../features/Metafields/MetafieldsSlice";
 
 export default function Cookies () {
+
+    const [ queryLoading, setQueryLoading ] = useState( true );
+    const [ toastProps, setToastProps ] = useState( { content : null } );
+    const [ ressourcesCookiesList, setRessourcesCookiesList ] = useState( [] );
+    const [ ressourcesCookiesListSorted, setRessourcesCookiesListSorted ] = useState( [] );
+    const [ ressourcesCookiesMetafield, setRessourcesCookiesMetafield ] = useState();
+    const [ ressourcesProviderList, setRessourcesProviderList ] = useState( [] );
+    const [ ressourcesTypeList, setRessourcesTypeList ] = useState( [] );
+    const [ modalOpenEditCookie, setModalOpenEditCookie ] = useState( false );
+    const [ modalEditCookie, setModalEditCookie ] = useState();
+    const [ modalNameCookie, setModalNameCookie ] = useState();
+    const [ modalDescriptionCookie, setModalDescriptionCookie ] = useState();
+    const [ modalPathCookie, setModalPathCookie ] = useState("/");
+    const [ modalDomainCookie, setModalDomainCookie ] = useState("/");
+    const [ modalProviderCookie, setModalProviderCookie ] = useState("/");
+
     /**
      * Expire Definitionen
      * @type {[{label: string, value: number}, {label: string, value: number}, {label: string, value: number}, {label: string, value: number}, {label: string, value: number}, null, null, null, null, null, null, null]}
@@ -34,173 +55,10 @@ export default function Cookies () {
     /**
      * Cookie Data Schema
      */
-    const cookieDataSchema = [
-        {
-            label : "Name",
-            tagType : "h3",
-            propertyName : "name",
-            type : "text",
-            autoComplete : "off",
-            multiline : false,
-            sortable : true,
-            visible : true,
-            validator : null
-        },
-        {
-            label : "Description",
-            tagType : "p",
-            propertyName : "description",
-            type : "text",
-            autoComplete : "off",
-            multiline : 4,
-            sortable : false,
-            visible : true,
-            validator : null
-        },
-        {
-            label : "Path",
-            tagType : "p",
-            propertyName : "path",
-            type : "text",
-            autoComplete : "off",
-            multiline : false,
-            sortable : true,
-            visible : true,
-            validator : "urlPaht"
-        },
-        {
-            label : "Domain",
-            tagType : "p",
-            propertyName : "domain",
-            type : "text",
-            autoComplete : "off",
-            multiline : false,
-            sortable : true,
-            visible : true,
-            validator : "domain"
-        },
-        {
-            label : "Provider",
-            tagType : "p",
-            propertyName : "provider",
-            type : "text",
-            autoComplete : "off",
-            multiline : false,
-            sortable : true,
-            visible : true,
-            validator : null
-        },
-        {
-            label : "Group",
-            tagType : "p",
-            propertyName : "group",
-            type : ["select","create"],
-            selectValues : () => ressourcesProviderList,
-            autoComplete : "off",
-            multiline : false,
-            sortable : true,
-            visible : true,
-            validator : null
-        },
-        {
-            label : "Source",
-            tagType : "p",
-            propertyName : "src",
-            type : "string",
-            selectValues : null,
-            autoComplete : "off",
-            multiline : false,
-            sortable : false,
-            visible : true,
-            validator : "urlPath"
-        },
-        {
-            label : "Deletable",
-            tagType : null,
-            propertyName : "deletable",
-            type : "boolean",
-            autoComplete : "off",
-            multiline : false,
-            sortable : false,
-            visible : false,
-            validator : null
-        },
-        {
-            label : "Expires",
-            tagType : "p",
-            propertyName : "expires",
-            type : "select",
-            selectValues : () => Expires,
-            autoComplete : "off",
-            multiline : false,
-            sortable : false,
-            visible : true,
-            validator : "expires"
-        },
-        {
-            label : "Type",
-            tagType : "p",
-            propertyName : "type",
-            type : "select",
-            selectValues : () => CookieTypes,
-            autoComplete : "off",
-            multiline : false,
-            sortable : true,
-            visible : true,
-            validator : "type"
-        },
-        {
-            label : "Recommendation",
-            tagType : null,
-            propertyName : "recommendation",
-            type : null,
-            selectValues : null,
-            autoComplete : "off",
-            multiline : false,
-            sortable : false,
-            visible : false,
-            validator : null
-        },
-        {
-            label : "Editable",
-            tagType : null,
-            propertyName : "editable",
-            type : "boolean",
-            selectValues : null,
-            autoComplete : "off",
-            multiline : false,
-            sortable : false,
-            visible : false,
-            validator : null
-        },
-        {
-            label : "Set",
-            tagType : null,
-            propertyName : "set",
-            type : "number",
-            selectValues : null,
-            autoComplete : "off",
-            multiline : false,
-            sortable : false,
-            visible : false,
-            validator : null
-        }
-    ];
+    const cookieDataSchema = cookieSchema( ressourcesProviderList, Expires, CookieTypes );
 
-    const [ queryLoading, setQueryLoading ] = useState( false );
-    const [ toastProps, setToastProps ] = useState( { content : null } );
-    const [ ressourcesCookiesList, setRessourcesCookiesList ] = useState( [] );
-    const [ ressourcesCookiesListSorted, setRessourcesCookiesListSorted ] = useState( [] );
-    const [ ressourcesCookiesMetafield, setRessourcesCookiesMetafield ] = useState();
-    const [ ressourcesProviderList, setRessourcesProviderList ] = useState( [] );
-    const [ ressourcesTypeList, setRessourcesTypeList ] = useState( [] );
-    const [ modalOpenEditCookie, setModalOpenEditCookie ] = useState( false );
-    const [ modalEditCookie, setModalEditCookie ] = useState();
-    const [ modalNameCookie, setModalNameCookie ] = useState();
-    const [ modalDescriptionCookie, setModalDescriptionCookie ] = useState();
-    const [ modalPathCookie, setModalPathCookie ] = useState("/");
-    const [ modalDomainCookie, setModalDomainCookie ] = useState("/");
-    const [ modalProviderCookie, setModalProviderCookie ] = useState("/");
+    const dispatch = useDispatch();
+    const test = getMetafield( { namespace : "bc_cookie", key : "bc_cookie_list"} );
 
     const toastMarkup = function () {
         return toastProps.content && (
@@ -224,13 +82,6 @@ export default function Cookies () {
             })
         }
         return list;
-    }
-    const sort = function (items, index, direction = "descending") {
-        return [...items].sort((rowA, rowB) => {
-            if (rowA[index].toLowerCase() < rowB[index].toLowerCase()) return direction === 'descending' ? -1 : +1
-            if (rowA[index].toLowerCase() > rowB[index].toLowerCase()) return direction === 'descending' ? +1 : -1
-            else return 0
-        });
     }
 
     const RenderTextNodes = function ({ cookieData } ) {
@@ -330,6 +181,7 @@ export default function Cookies () {
             }
             setRessourcesCookiesList( ressourceList );
             setRessourcesCookiesMetafield( metafieldCopy );
+            setQueryLoading( !queryLoading );
         }
     }
 
@@ -338,7 +190,6 @@ export default function Cookies () {
         setRessourcesProviderList( getDataList( sortedList.map( cookie => cookie ), "provider" ) );
         setRessourcesTypeList( getDataList( sortedList.map( cookie => cookie ), "type" ) );
         setRessourcesCookiesListSorted( sortedList.map( cookie => cookie ) );
-        setQueryLoading( false );
     }, [ ressourcesCookiesList ])
 
     const cookieMetafield = MetafieldController({
@@ -518,10 +369,21 @@ export default function Cookies () {
         </Modal>
     );
 
+    if ( queryLoading ) {
+        return (
+            <>
+                <Card >
+                    <Card.Section>
+                        <RessourcesCookieListSkeleton elements="10" />
+                    </Card.Section>
+                </Card>
+            </>
+        )
+    }
 
     return (
         <>
-            {toastMarkup()}
+            {toastMarkup}
             {cookieEditMarkup}
             <Card>
                 <Card.Section>

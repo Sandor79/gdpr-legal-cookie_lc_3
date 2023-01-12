@@ -1,6 +1,8 @@
+import {Provider} from "react-redux";
+import store from "./store/configureStore";
 import {BrowserRouter} from "react-router-dom";
-import { NavigationMenu } from "@shopify/app-bridge-react";
-import { Routes, WebRoutes } from "./Routes";
+import { NavigationMenu} from "@shopify/app-bridge-react";
+import {Routes, WebRoutes} from "./Routes";
 import "@shopify/polaris/build/esm/styles.css";
 
 import {
@@ -9,26 +11,26 @@ import {
     PolarisProvider,
 } from "./components";
 
-export default function App() {
 
-    // Any .tsx or .jsx files in /pages will become a route
-    // See documentation for <Routes /> for more info
+export default function App() {
     const pages = import.meta.globEager("./pages/**/!(*.test.[jt]sx)*.([jt]sx)");
 
     return (
-        <PolarisProvider>
+        <Provider store={store}>
             <BrowserRouter>
                 <AppBridgeProvider>
-                    <QueryProvider>
-                        <NavigationMenu
-                            navigationLinks={
-                                WebRoutes
-                            }
-                        />
-                        <Routes pages={ pages }/>
-                    </QueryProvider>
+                    <PolarisProvider>
+                        <QueryProvider>
+                            <NavigationMenu
+                                navigationLinks={
+                                    WebRoutes
+                                }
+                            />
+                            <Routes pages={pages}/>
+                        </QueryProvider>
+                    </PolarisProvider>
                 </AppBridgeProvider>
             </BrowserRouter>
-        </PolarisProvider>
+        </Provider>
     );
 }

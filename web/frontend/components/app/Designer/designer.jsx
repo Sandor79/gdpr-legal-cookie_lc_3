@@ -741,22 +741,13 @@ export default function Designer () {
                     id="modal"
                     style={{ background: fields.backgroundColor.value }}
                 >
-                    <iframe
-                        style={{
-                            position: "absolute",
-                            top: "0",
-                            left: "0",
-                            bottom: "0",
-                            right: "0",
-                            width: "100%",
-                            height: "100%"
-                        }}
+                    <div dangerouslySetInnerHTML={{ __html: `<iframe style='position: absolute; top: 0;left: 0;bottom: 0;right: 0;width: 100%;height: 100%';
                         title="shop"
-                        src="https://debut-theme-default.myshopify.com/"
-                        frameBorder="0"
-                        scrolling="yes"
-                        allowFullScreen={true}
-                    />
+                        src="https://beeclever.de"
+                        sandbox='allow-forms allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation'
+                        allowFullScreen
+                        ref='iframe'/>`}} />
+
                     <PreviewContent id="modal-content">
                         <PreviewHeader
                             id="modal-header"

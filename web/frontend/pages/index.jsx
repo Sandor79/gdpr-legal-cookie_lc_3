@@ -8,55 +8,31 @@ import {
   Link,
   Heading,
 } from "@shopify/polaris";
-import {TitleBar, useAppBridge} from "@shopify/app-bridge-react";
-import {Loading} from "@shopify/app-bridge/actions";
+import {TitleBar} from "@shopify/app-bridge-react";
+
 
 import { trophyImage } from "../assets";
 
 import { ProductsCard } from "../components";
-import {useEffect, useState} from "react";
-import {useAppQuery} from "../hooks";
-import LOGGER from "../components/app/Helpers/Logger";
+
+import { Actions } from "../features/App_Bridge/Actions";
+
 
 export default function HomePage() {
+
+    /*
     const app = useAppBridge();
     const loading = Loading.create( app );
-
-    const [webhookRegistryLoaded, setWebhookRegistryLoaded] = useState(false)
-
-    const apiCallInstall = function () {
-
-    }
 
     const stopLoading = function () {
         loading.dispatch( Loading.Action.STOP);
     }
-    useEffect(() => stopLoading(),[] );
 
     useEffect(()=>{
-        console.log( loading );
-
-        if ( !!loading ) {
-            setWebhookRegistryLoaded( !webhookRegistryLoaded );
-            const {data} = useAppQuery({
-                url: `/api/webhooks/check-registry`,
-                fetchInit: {
-                    method: 'GET',
-                    mode: 'cors',
-                    cache: 'default',
-                },
-                reactQueryOptions: {
-                    onSuccess: () => {
-                        setWebhookRegistryLoaded(!webhookRegistryLoaded);
-                        LOGGER.LOG("useAppQuery")
-                    },
-                },
-            });
-            console.log(data)
-        }
-    }, [loading])
-
-
+        stopLoading()
+    }, [])
+    */
+    Actions.TOGGLE_LOADING()
 
   return (
     <Page narrowWidth>
