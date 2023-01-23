@@ -1,10 +1,6 @@
-import LOGGER from "../../Helpers/Logger";
+import LOGGER from "./Logger";
 import {useEffect, useState} from "react";
-import {useAppQuery} from "../../../../hooks";
-import {useDispatch, useSelector} from 'react-redux';
-import { getAllMetafields, selectByNamespaceKey } from "./metafieldSlice";
-import {getMetafield} from "../../../../features/Metafields/MetafieldsSlice";
-//import { fetchMetafields } from "./metafieldSlice";
+import {useAppQuery} from "../../../hooks";
 
 export default function MetafieldController ( configData ) {
     const { namespace, key, callback } = configData;
@@ -13,23 +9,10 @@ export default function MetafieldController ( configData ) {
     const [ metafield, setMetafield ] = useState()
     const [ config ] = useState( configData )
 
-//    const metafields = useSelector( getAllMetafields );
-//    console.log({metafields} )
-
-//    const singleMetafield = ( namespace, key ) => {
-//        const metafield = useSelector( state => selectByNamespaceKey( state, namespace, key ) )
-
-//        console.log({metafield} )
-//    }
-//    singleMetafield("bc_cookie", "bc_cookie_list")
-
-
-/*
     const getMetafield = function () {
         LOGGER.LOG("getMetafield", { metafield })
         return metafield;
     }
-*/
     const saveMetafield = function ( oldMetafield, value ) {
         if ( !!value ) {
             let metafieldValue;

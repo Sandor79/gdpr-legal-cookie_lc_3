@@ -1,5 +1,6 @@
 import {useAppQuery} from "../../../hooks";
 import LOGGER from "../Helpers/Logger";
+import {AppActions} from "../../../ReduxStoreProvider";
 
 
 export default function ThemeController () {
@@ -13,7 +14,7 @@ export default function ThemeController () {
         },
         reactQueryOptions: {
             onSuccess: () => {
-                setIsLoading( !isLoading );
+                AppActions.Page.setPageLoading( !isLoading );
                 LOGGER.LOG("useAppQuery")
             },
         },

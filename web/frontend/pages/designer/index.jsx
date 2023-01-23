@@ -1,15 +1,18 @@
-import Designer from "../../components/app/Designer/designer";
-import { Page} from "@shopify/polaris";
-import React from "react";
-import {TitleBar} from "@shopify/app-bridge-react";
+import React,{ lazy, Suspense } from "react";
+import {getPageInfo} from "../../routes/WebRoutes";
+import SkeletonDesigner from "../../components/app/Designer/SkeletonDesigner";
+
+const PageTemplate = lazy(() => import( "../../components/app/Templates/PageTemplate" ));
+const Designer = lazy(() => import( "../../components/app/Designer/designer" ));
+
+
 
 export default function Index () {
     return (
-        <Page fullWidth>
-            <TitleBar title="Designer" primaryAction={null}
-                      breadcrumbs={ [{ content : "Dashboard", url : "/"}]}
-            />
-            <Designer/>
-        </Page>
+        <Suspense fallback={(<SkeletonDesigner />)}>
+            <PageTemplate { ...getPageInfo( "designer" ) }>
+                <Designer />
+            </PageTemplate>
+        </Suspense>
     )
 };

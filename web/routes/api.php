@@ -81,6 +81,7 @@ Route::group([ 'middleware' => ["shopify.auth"]], function () {
 
     Route::prefix('metafield')->controller(MetafieldsController::class)->group(function () {
         Route::get('/namespace/{namespace}/key/{key}', "get");
+        Route::get('/owner-id/shop', "ownerId");
         Route::post('/save/', "save");
     });
 

@@ -1,7 +1,6 @@
-import {Provider} from "react-redux";
-import store from "./store/configureStore";
+import { ReduxStoreProvider, AppProvider } from "./ReduxStoreProvider/";
 import {BrowserRouter} from "react-router-dom";
-import { NavigationMenu} from "@shopify/app-bridge-react";
+import {NavigationMenu} from "@shopify/app-bridge-react";
 import {Routes, WebRoutes} from "./Routes";
 import "@shopify/polaris/build/esm/styles.css";
 
@@ -11,26 +10,28 @@ import {
     PolarisProvider,
 } from "./components";
 
+import * as React from "react";
+import {FetchProvider} from "./ReduxStoreProvider/FetchProvider";
+
+const pages = import.meta.globEager("./pages/**/!(*.test.[jt]sx)*.([jt]sx)");
 
 export default function App() {
-    const pages = import.meta.globEager("./pages/**/!(*.test.[jt]sx)*.([jt]sx)");
-
     return (
-        <Provider store={store}>
-            <BrowserRouter>
-                <AppBridgeProvider>
-                    <PolarisProvider>
-                        <QueryProvider>
-                            <NavigationMenu
-                                navigationLinks={
-                                    WebRoutes
-                                }
-                            />
-                            <Routes pages={pages}/>
-                        </QueryProvider>
-                    </PolarisProvider>
-                </AppBridgeProvider>
-            </BrowserRouter>
-        </Provider>
+        <ReduxStoreProvider>
+            <PolarisProvider>
+                <BrowserRouter>
+                    <AppBridgeProvider>
+                        <AppProvider>
+                            <QueryProvider>
+                                <NavigationMenu navigationLinks={ WebRoutes }/>
+                                <Routes pages={pages}/>
+
+                                <FetchProvider/>
+                            </QueryProvider>
+                        </AppProvider>
+                    </AppBridgeProvider>
+                </BrowserRouter>
+            </PolarisProvider>
+        </ReduxStoreProvider>
     );
-}
+};

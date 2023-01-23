@@ -2,12 +2,11 @@ import {useCallback, useMemo, useState} from "react";
 import {Button, Card, ResourceList, ResourceItem, Text, Modal, Stack, TextField, Select} from "@shopify/polaris";
 import LOGGER from "../../Helpers/Logger";
 import {Toast} from "@shopify/app-bridge-react";
-import MetafieldController from "../../Controllers/MetafieldController/MetafieldController";
+import MetafieldController from "../../Helpers/MetafieldController";
 import sort from "../../Helpers/sort";
 import { cookieSchema } from "./cookieDataSchema";
 import RessourcesCookieListSkeleton from "./RessourcesCookieListSkeleton";
-import {useDispatch, useSelector} from "react-redux";
-import {getMetafield} from "../../../../features/Metafields/MetafieldsSlice";
+import {useDispatch} from "react-redux";
 
 export default function Cookies () {
 
@@ -56,9 +55,6 @@ export default function Cookies () {
      * Cookie Data Schema
      */
     const cookieDataSchema = cookieSchema( ressourcesProviderList, Expires, CookieTypes );
-
-    const dispatch = useDispatch();
-    const test = getMetafield( { namespace : "bc_cookie", key : "bc_cookie_list"} );
 
     const toastMarkup = function () {
         return toastProps.content && (
@@ -242,6 +238,8 @@ export default function Cookies () {
     });
     */
 
+    const dispatch = useDispatch();
+
     const handleNameModalInputChange = useCallback( newValue => setModalNameCookie( newValue ), [])
     const handleDescriptionChange = useCallback( newValue => setModalDescriptionCookie( newValue ), [])
     const handlePahtModalInputChange = useCallback( newValue => setModalPathCookie( newValue ), [])
@@ -313,6 +311,7 @@ export default function Cookies () {
             handleUpdateAndSave()
         }
     }
+
     const cookieEditMarkup = modalOpenEditCookie && !!modalEditCookie && (
         <Modal
             open={ modalOpenEditCookie }

@@ -57,7 +57,7 @@ class CspHeader
         }
 
 
-        $response->headers->set('Content-Security-Policy', "$headerValue");
+        $response->headers->set('frame-ancestors', "block-all-mixed-content; upgrade-insecure-requests; default-src 'self' data: blob: https://* shopify-pos://*; connect-src 'self' blob: wss://* https://* https://bugsnag-mtl.shopifycloud.com:4900/js hcaptcha.com *.hcaptcha.com; style-src 'self' 'unsafe-inline' data: blob: https://*; media-src 'self' data: blob: https://videos.shopifycdn.com https://cdn.shopify.com/videos/ https://cdn.shopify.com/shopifycloud/web/assets/v1/ https://almond-sandpiper-6593.twil.io/assets/ https://*.wistia.com https://*.wistia.net https://embedwistia-a.akamaihd.net; script-src 'self' 'unsafe-inline' 'unsafe-eval' cdn.shopify.com cdn.shopifycdn.net *.shopifycs.com www.google-analytics.com stats.g.doubleclick.net app.shopify.com app.myshopify.com c.paypal.com www.paypal.com appcenter.intuit.com mpsnare.iesnare.com api.stripe.com maps.googleapis.com js.braintreegateway.com songbird.cardinalcommerce.com hcaptcha.com *.hcaptcha.com www.youtube.com s.ytimg.com fast.wistia.com; child-src 'self' https://* shopify-pos://*; frame-src app.shopify.com *.shopifyapps.com *.myshopify.com *.myshopify.com https://* shopify-pos://* hcaptcha.com *.hcaptcha.com blob: http://localhost:*; worker-src 'self' blob:");
 
         return $response;
     }

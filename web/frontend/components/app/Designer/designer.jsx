@@ -70,7 +70,7 @@ export default function Designer () {
         []
     );
 
-    const [previewWidth, setPreviewWidth] = useState("100%");
+    const [previewWidth, setPreviewWidth] = useState("99vw");
     const [previewHeight, setPreviewHeight] = useState("100%");
 
     const [toast, setToast] = useState({});
@@ -141,7 +141,7 @@ export default function Designer () {
 
     useEffect(() => {
 
-        selectedViewTab === 0 ? setPreviewWidth("375px") : setPreviewWidth("100%");
+        selectedViewTab === 0 ? setPreviewWidth("375px") : setPreviewWidth("99vw");
         selectedViewTab === 0 ? setPreviewHeight("680px") : setPreviewHeight("100%");
         selectedViewTab === 2
             ? setDesktopNavigationActive(false)
@@ -174,28 +174,6 @@ export default function Designer () {
     }, []);
 
 // Template elements start
-    const EmptyStateTemplate = function () {
-        return (
-            <Layout>
-                <EmptyState image={emptyState}>
-                    <div
-                        style={{
-                            position: "fixed",
-                            top: "45%",
-                            left: "50%",
-                            transform: "translate(-50%, -45%)"
-                        }}
-                    >
-                        <Spinner
-                            accessibilityLabel="Loading..."
-                            size="large"
-                            color="teal"
-                        />
-                    </div>
-                </EmptyState>
-            </Layout>
-        )
-    }
 
     // Frame
 
@@ -741,13 +719,24 @@ export default function Designer () {
                     id="modal"
                     style={{ background: fields.backgroundColor.value }}
                 >
-                    <div dangerouslySetInnerHTML={{ __html: `<iframe style='position: absolute; top: 0;left: 0;bottom: 0;right: 0;width: 100%;height: 100%';
+                    <iframe
+                        style={{
+                            position: "absolute",
+                            top: "0",
+                            left: "0",
+                            bottom: "0",
+                            right: "0",
+                            width: "100%",
+                            height: "100%"
+                        }}
                         title="shop"
-                        src="https://beeclever.de"
-                        sandbox='allow-forms allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation'
-                        allowFullScreen
-                        ref='iframe'/>`}} />
-
+                        src="https://sandor-dev-1.myshopify.com"
+                        sandbox='allow-scripts'
+                        referrerPolicy={true}
+                        frameBorder="0"
+                        scrolling="yes"
+                        allowFullScreen={true}
+                    />
                     <PreviewContent id="modal-content">
                         <PreviewHeader
                             id="modal-header"
@@ -765,7 +754,7 @@ export default function Designer () {
                                 fontFamily: fields.bodyTextFont.value
                             }}
                         >
-                            {fields.bodyText.value.split("\n").map((value, index) => {
+                            {!!fields.bodyText.value && fields.bodyText.value.split("\n").map((value, index) => {
                                 return <p key={index}>{value}</p>;
                             })}
                         </PreviewBody>
@@ -799,7 +788,7 @@ export default function Designer () {
 
 
     return (
-        loading ? <EmptyStateTemplate/> : <FrameTemplate/>
+        <FrameTemplate/>
     )
 }
 

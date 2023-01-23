@@ -50,6 +50,42 @@ class MetafieldsController extends Controller
         return response("{}");
     }
 
+    public static function ownerId(Request $request)
+    {
+        try {
+            $session = $request->get('shopifySession');
+
+            // Create GraphQL client
+            $client = new Graphql($session->getShop(), $session->getAccessToken());
+            // Use `query` method and pass your query as `data`
+            $queryString = "query {
+                      shop {
+                        id
+                      }
+                    }";
+
+            $response = $client->query($queryString);
+            $responseBody = $response->getDecodedBody();
+
+            CustomLogger::debug(
+                "metafields",
+                print_r($responseBody, true),
+                ["responseBody", __FILE__]
+            );
+
+            if (!is_null($responseBody["data"]["shop"]["id"])) {
+                return response($responseBody["data"]["shop"], 200);
+            } else {
+                throw new \Error("Owner id cannot loading");
+            }
+        } catch (\Exception $e) {
+            CustomLogger::debug(
+                "metafields",
+                $e
+            );
+        }
+        return response("{}");
+    }
     public static function save(Request $request)
     {
         $data = $request->post();
