@@ -4,129 +4,18 @@ import {useAppQuery} from "../../../../hooks";
 import {Toast} from "@shopify/app-bridge-react";
 
 import LOGGER from "../../Helpers/Logger"
-
+import {AppActions} from "../../../../ReduxStoreProvider";
 
 export default function CookieDefinitions() {
-
-    const columnDefinitions = [
-        {type: 'text', heading: 'Name', sortable: true},
-        {type: 'text', heading: 'Description', sortable: true},
-        {type: 'text', heading: 'Path', sortable: false},
-        {type: 'text', heading: 'Domain', sortable: false},
-        {type: 'text', heading: 'Provider', sortable: true},
-        {type: 'text', heading: 'Expires', sortable: false},
-        {type: 'text', heading: 'Type', sortable: true}
-    ];
-
-    const headings = columnDefinitions.map(defition => defition.heading);
-    const types = columnDefinitions.map(defition => defition.type);
-
     const sort = function (items, index, direction) {
-        return [...items].sort((rowA, rowB) => {
+        const copyOfItems = [...items];
+
+        return copyOfItems.sort((rowA, rowB) => {
             if (rowA[index].toLowerCase() < rowB[index].toLowerCase()) return direction === 'descending' ? -1 : +1
             if (rowA[index].toLowerCase() > rowB[index].toLowerCase()) return direction === 'descending' ? +1 : -1
             else return 0
         });
     }
-
-    const [sortedRows, setSortedRows] = useState(null);
-
-    const [isLoading, setIsLoading] = useState(true);
-    const emptyToastProps = {content: null};
-    const [toastProps, setToastProps] = useState(emptyToastProps);
-    const toastMarkup = toastProps.content && (
-        <Toast {...toastProps} onDismiss={() => setToastProps(emptyToastProps)}/>
-    );
-
-    useAppQuery({
-        url: "/api/metafield/namespace/bc_cookie/key/bc_cookie_list",
-        reactQueryOptions: {
-            onSuccess: ( data ) => {
-                LOGGER.LOG("onSuccess", {data} )
-
-                const metafieldData = JSON.parse( data.value );
-
-                const cookieArray = [];
-                const cookieObjects = [];
-                if (Object.prototype.toString.call(metafieldData) === '[object Object]') {
-                    for (const [name, value] of Object.entries( metafieldData )) {
-                        value["name"] = name;
-                        const arr = [];
-                        headings.forEach(heading => arr.push(value[heading.toLowerCase()]))
-                        cookieArray.push(arr);
-                        cookieObjects.push(value)
-                    }
-                }
-                const sortedList = sort( cookieArray, 0, 'descending');
-
-                setCookieList({sortedList} );
-                setProviders( getList('Provider') );
-                setCookieTypes( getList( "Type") )
-                setRows( sortedList )
-                setCookieObjectList( cookieObjects );
-                setIsLoading(false);
-                LOGGER.LOG({cookieObjects} )
-            }
-        },
-    });
-
-    const [cookieList, setCookieList] = useState( [] )
-    /*
-    const [cookieList, setCookieList] = useState(() => {
-        const cookieArray = [];
-        if (Object.prototype.toString.call(cookieData) === '[object Object]') {
-            for (const [name, value] of Object.entries(cookieData)) {
-                value["name"] = name;
-                const arr = [];
-                headings.forEach(heading => arr.push(value[heading.toLowerCase()]))
-                cookieArray.push(arr);
-            }
-        } else {
-            return sort(cookieList, 0, 'descending');
-        }
-        return sort(cookieArray, 0, 'descending');
-    })
-    */
-
-    const [rows, setRows] = useState(()=>{
-        return sortedRows ? sortedRows : cookieList
-    });
-
-    const [cookieObjectList, setCookieObjectList] = useState([]);
-
-    const handleCookiesLoaded = function ( data ){
-        LOGGER.LOG( data )
-        const metafieldData = JSON.parse( data.value );
-
-        const cookieArray = [];
-        const cookieObjects = [];
-        if (Object.prototype.toString.call(metafieldData) === '[object Object]') {
-            for (const [name, value] of Object.entries( metafieldData )) {
-                value["name"] = name;
-                const arr = [];
-                headings.forEach(heading => arr.push(value[heading.toLowerCase()]))
-                cookieArray.push(arr);
-                cookieObjects.push(value)
-            }
-        }
-        const sortedList = sort( cookieArray, 0, 'descending');
-
-        setCookieList({sortedList} );
-        setProviders( getList('Provider') );
-        setCookieTypes( getList( "Type") )
-        setRows( sortedList )
-        setCookieObjectList( cookieObjects );
-        setIsLoading(false);
-        LOGGER.LOG({cookieObjects} )
-    }
-
-
-    const handleSort = useCallback(
-        (index, direction) => setSortedRows(sort(rows, index, direction)),
-        [rows],
-    );
-    const {lgDown} = useBreakpoints();
-
     const getList = function (key) {
         const keys = [];
         const list = [];
@@ -138,22 +27,124 @@ export default function CookieDefinitions() {
                 list.push({label: key, value: key})
             }
         })
+        console.log(key, {list} )
         return list;
     }
+    const disambiguateLabel = function (key, value) {
+        switch (key) {
+            case 'Provider':
+                return value;
+            case 'Type':
+                return value;
+            default:
+                return value;
+        }
+    }
+    const isEmpty = function (value) {
+        if (Array.isArray(value)) {
+            return value.length === 0;
+        } else {
+            return value === '' || value == null;
+        }
+    }
+    const appendFilter = function ( type, labels ) {
+        console.log( { labels } )
+        if ( !!labels ) {
+            const filters = []
+            labels.forEach( label => {
+                const key = `${ type }_${ label }`
+
+                filters.push({
+                    type,
+                    key,
+                    label: disambiguateLabel( type, label ),
+                    onRemove: handleProviderValueRemove,
+                });
+            })
+            setAppliedFilters([...filters])
+            console.log( { filters } )
+        }
+    }
+    const columnDefinitions = [
+        {type: 'text', heading: 'Name', sortable: true},
+        {type: 'text', heading: 'Description', sortable: true},
+        {type: 'text', heading: 'Path', sortable: false},
+        {type: 'text', heading: 'Domain', sortable: false},
+        {type: 'text', heading: 'Provider', sortable: true},
+        {type: 'text', heading: 'Expires', sortable: false},
+        {type: 'text', heading: 'Type', sortable: true}
+    ];
+    const headings = columnDefinitions.map(defition => defition.heading);
+    const types = columnDefinitions.map(defition => defition.type);
+
+
+    const [isLoading, setIsLoading] = useState(true);
+    const [sortedRows, setSortedRows] = useState([] );
+    const [cookieList, setCookieList] = useState( [] )
+    const [rows, setRows] = useState( sortedRows );
+
+    const [cookieObjectList, setCookieObjectList] = useState([]);
+
+    const handleSort = useCallback(
+        (index, direction) => setSortedRows( sort(rows, index, direction) ),
+        [rows],
+    );
+    const {lgDown} = useBreakpoints();
+
     const [providers, setProviders] = useState(null)
-    const [provider, setProvider] = useState(null);
     const [cookietypes, setCookieTypes] = useState(null);
+
+    useEffect(() => setProviders( getList('Provider') ) && setCookieTypes( getList( "Type") ),[ rows ])
+    useEffect(() =>{
+        AppActions.DataActions.METAFIELDS.select({
+            namespace: 'bc_cookie',
+            key: "bc_cookie_list"
+        } ).then( data => {
+            const metafieldData = JSON.parse( data.value || data.VALUE );
+            const cookieArray = [];
+            const cookieObjects = [];
+
+            if (Object.prototype.toString.call(metafieldData) === '[object Object]') {
+                for (const [name, value] of Object.entries( metafieldData )) {
+                    value["name"] = name;
+                    const arr = [];
+
+                    headings.forEach(heading => {
+                        const newValue = { ...value }
+                        heading = heading.toLowerCase();
+
+                        if( heading === "description" ){
+                            const shortDescription = newValue[ heading ].length < 30 ? newValue[ heading ] : newValue[ heading ].slice(0,30) + "...";
+                            newValue[heading] = shortDescription;
+                        }
+                        arr.push(newValue[ heading ])
+                    })
+
+                    cookieArray.push(arr);
+                    cookieObjects.push(value)
+                }
+            }
+
+            const initialSortedList = sort( cookieArray, 0, 'descending');
+
+            setCookieList( [...initialSortedList] );
+            setProviders( getList('Provider') );
+            setCookieTypes( getList( "Type") )
+            setRows( [...initialSortedList] )
+            setSortedRows( [...initialSortedList] )
+            setCookieObjectList( cookieObjects );
+            setIsLoading(false);
+            LOGGER.LOG( 121, {cookieObjects} )
+        } )
+    },[])
+
+
+    const [provider, setProvider] = useState(null);
     const [cookietype, setCookieType] = useState(null);
     const [queryValue, setQueryValue] = useState('');
 
-    const handleProviderChange = useCallback(
-        (value) => setProvider(value),
-        []
-    )
-    const handleCookieTypeChange = useCallback(
-        (value) => setCookieType(value),
-        []
-    )
+    const handleProviderChange = useCallback( value => setProvider(value), [] )
+    const handleCookieTypeChange = useCallback( value => setCookieType(value), [] )
 
     const filters = [
         {
@@ -187,26 +178,6 @@ export default function CookieDefinitions() {
         }
     ];
 
-    function disambiguateLabel(key, value) {
-        LOGGER.LOG({key, value})
-        switch (key) {
-            case 'Provider':
-                return value;
-            case 'Type':
-                return value;
-            default:
-                return value;
-        }
-    }
-
-    function isEmpty(value) {
-        if (Array.isArray(value)) {
-            return value.length === 0;
-        } else {
-            return value === '' || value == null;
-        }
-    }
-
     const handleFilterQueryChange = useCallback((value) => setQueryValue(value), [])
     const handleQueryValueRemove = useCallback(() => setQueryValue(''), [])
     const handleProviderValueRemove = useCallback(() => setProvider(null), [])
@@ -215,55 +186,32 @@ export default function CookieDefinitions() {
 
     const handleFiltersClearAll = useCallback(() => {
         handleProviderValueRemove();
-        handleProviderValueRemove();
         handleCookieTypeValueRemove();
     }, [])
 
-    const appliedFilters = [];
+    const [appliedFilters, setAppliedFilters ] = useState([]);
 
-    useEffect(() => {
-        if (!isEmpty(provider)) {
-            const key = 'Provider';
-            appliedFilters.push({
-                key,
-                label: disambiguateLabel(key, provider),
-                onRemove: handleProviderValueRemove,
-            });
-        }
-    }, [provider])
-
-    useEffect(() => {
-        if (!isEmpty(cookietype)) {
-            const key = 'Type';
-            appliedFilters.push({
-                key,
-                label: disambiguateLabel(key, cookietype),
-                onRemove: handleCookieTypeValueRemove,
-            });
-        }
-    }, [cookietype])
-
+    useEffect(() => appendFilter( "Provider", provider ),[ provider ])
+    useEffect(() => appendFilter( "Type", cookietype ),[ cookietype ])
     useEffect(() => {
         let list = [];
 
         if (appliedFilters.length > 0) {
-            appliedFilters.forEach(filter => {
-                const index = headings.indexOf(filter.key);
-                LOGGER.LOG(index);
-                filter.label.forEach(label => {
-                    LOGGER.LOG(label)
-                    cookieList.forEach(row => {
-                        if (row[index] === label) {
-                            list.push(row)
-                        }
-                    })
-                });
+            const filters = [ ...appliedFilters ];
+
+            filters.forEach(filter => {
+                const index = headings.indexOf( filter.type );
+                LOGGER.LOG( 239, index, filter );
+
+                cookieList.forEach( row => {
+                    if (row[index] === filter.label) {
+                        console.log( { row, label: filter.label } )
+                        list.push(row)
+                    }
+                })
             });
             setSortedRows(list)
-        } else {
-            sortedRows ? setSortedRows(null) : null
         }
-
     }, [appliedFilters])
 
     const [editCookie, setEditCookie] = useState( null );
@@ -311,7 +259,7 @@ export default function CookieDefinitions() {
     const handleUpdateAndSave = useCallback(
         () => {
 
-            LOGGER.LOG({
+            LOGGER.LOG(308, {
                 editCookie,
                 nameModalInput,
                 descriptionModalInput,
@@ -323,7 +271,7 @@ export default function CookieDefinitions() {
             const copy = JSON.parse( JSON.stringify( cookieObjectList ))
             const metafieldData = {};
 
-            LOGGER.LOG( editCookie.name, nameModalInput )
+            LOGGER.LOG( 320, editCookie.name, nameModalInput )
 
             if ( editCookie.name !== nameModalInput ||
                 editCookie.description !== descriptionModalInput ||
@@ -359,7 +307,7 @@ export default function CookieDefinitions() {
                 })
                 setCookieObjectList( cleanedObjectList );
             }
-            LOGGER.LOG( cookieObjectList )
+            LOGGER.LOG( 356, cookieObjectList )
 
         }, [editCookie, nameModalInput,
             descriptionModalInput,
@@ -369,7 +317,7 @@ export default function CookieDefinitions() {
     )
 
     const handleEditCookie = function ( name ) {
-        LOGGER.LOG( {name} )
+        LOGGER.LOG( 366, {name} )
         handleChangeModalEditCookie()
         const cookie = cookieObjectList.filter( cookie => cookie.name === name )[0];
         setEditCookie( cookie )
@@ -378,54 +326,6 @@ export default function CookieDefinitions() {
         setPahtModalInput(cookie.path)
         seDomainModalInput(cookie.domain)
         setProviderModalInput(cookie.provider)
-    }
-
-    const renderCookieItems = function (item) {
-        const {name, description, provider} = item;
-        return (
-            <ResourceItem
-                id={name}
-                url={'url'}
-                accessibilityLabel={`Edit ${name}`}
-                name={name}
-                verticalAlignment="trailing"
-            >
-                <div style={{
-                    display : "flex"
-                }}>
-                    <div>
-                        <Text variant="bodyMd" fontWeight="bold" as="h3">
-                            {name}
-                        </Text>
-                        <Text variant="bodyMd" as="p" alignment="left">
-                            { description }
-                        </Text>
-                    </div>
-                    <div style={{
-                        display: "flex",
-                        width: "min-content",
-                        margin: "auto 0 auto auto",
-                    }}>
-                        <Button
-                            primary={false}
-                            onClick={()=> handleEditCookie( name )}
-                            connectedDisclosure={{
-                                accessibilityLabel: 'Delete cookie definition',
-                                actions: [
-                                    {
-                                        content: 'Delete definition',
-                                        destructive: true,
-                                        plain: false
-                                    }
-                                ],
-                            }}
-                        >
-                            Edit
-                        </Button>
-                    </div>
-                </div>
-            </ResourceItem>
-        );
     }
 
     const cookieEditMarkup = obenModalEditCookie && editCookie && (
@@ -496,9 +396,8 @@ export default function CookieDefinitions() {
 
     return (
         <>
-            {toastMarkup}
-            {cookieEditMarkup}
             <Card>
+            {cookieEditMarkup}
                 <Card.Section>
                     <Filters
                         queryValue={queryValue}
@@ -510,15 +409,10 @@ export default function CookieDefinitions() {
                     />
                 </Card.Section>
                 <Card.Section>
-                    <ResourceList
-                        resourceName={{singular: 'sale', plural: 'sales'}}
-                        items={ cookieObjectList }
-                        renderItem={renderCookieItems}
-                    />
                     <DataTable
                         columnContentTypes={types}
                         headings={headings}
-                        rows={rows}
+                        rows={ sortedRows }
                         sortable={() => columnDefinitions.map(definition => definition.sortable)}
                         defaultSortDirection="descending"
                         initialSortColumnIndex={0}

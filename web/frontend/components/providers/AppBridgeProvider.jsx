@@ -36,9 +36,12 @@ export function AppBridgeProvider({children}) {
     const [appBridgeConfig] = useState(() => {
         const host =
             new URLSearchParams(location.search).get("host") ||
-            window.__SHOPIFY_DEV_HOST;
+            window.__SHOPIFY_DEV_HOST || sessionStorage.getItem("host");
 
         window.__SHOPIFY_DEV_HOST = host;
+        if ( !!host ) {
+            sessionStorage.setItem("host", host)
+        }
 
         return {
             host,

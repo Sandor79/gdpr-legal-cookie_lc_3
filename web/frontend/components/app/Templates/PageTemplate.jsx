@@ -7,14 +7,18 @@ const PageTemplate = function ({ title, primaryAction, breadcrumbs, children }) 
         <Page fullWidth>
             <TitleBar title={ title } primaryAction={ primaryAction } breadcrumbs={ breadcrumbs} />
             <Layout>
-                { children }
+                <Layout.Section>
+                    { children }
+                </Layout.Section>
+                <Layout.Section>
+                    <FooterHelp>
+                        Learn more about{' '}
+                        <Link url="https://help.shopify.com/manual/orders/fulfill-orders">
+                            fulfilling orders
+                        </Link>
+                    </FooterHelp>
+                </Layout.Section>
             </Layout>
-            <FooterHelp>
-                Learn more about{' '}
-                <Link url="https://help.shopify.com/manual/orders/fulfill-orders">
-                    fulfilling orders
-                </Link>
-            </FooterHelp>
         </Page>
     );
 }

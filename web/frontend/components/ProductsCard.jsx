@@ -32,15 +32,13 @@ export function ProductsCard() {
         const response = await fetch("/api/products/create");
 
         if (response.ok) {
+            console.log({response})
             AppActions.Page.setPageLoading( false )
             await refetchProductCount();
             AppActions.Toast.Message( {content: "5 products created!"} )
         } else {
             AppActions.Page.setPageLoading( false )
-            AppActions.Toast.Error({
-                content: "There was an error creating products",
-                error: true,
-            });
+            AppActions.Toast.Error({ content: "There was an error creating products" });
         }
     };
 

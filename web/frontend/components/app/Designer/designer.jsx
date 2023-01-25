@@ -70,7 +70,7 @@ export default function Designer () {
         []
     );
 
-    const [previewWidth, setPreviewWidth] = useState("99vw");
+    const [previewWidth, setPreviewWidth] = useState("100%");
     const [previewHeight, setPreviewHeight] = useState("100%");
 
     const [toast, setToast] = useState({});
@@ -141,7 +141,7 @@ export default function Designer () {
 
     useEffect(() => {
 
-        selectedViewTab === 0 ? setPreviewWidth("375px") : setPreviewWidth("99vw");
+        selectedViewTab === 0 ? setPreviewWidth("375px") : setPreviewWidth("100%");
         selectedViewTab === 0 ? setPreviewHeight("680px") : setPreviewHeight("100%");
         selectedViewTab === 2
             ? setDesktopNavigationActive(false)

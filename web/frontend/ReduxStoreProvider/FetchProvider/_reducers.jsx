@@ -2,7 +2,7 @@ import {
     INITIAL_STATE,
     KEY,
     METAFIELD_TEMPLATE,
-    METAFIELDS_DATA_CREATE, METAFIELDS_DATA_SAVE, METAFIELDS_DATA_UPDATE,
+    METAFIELDS_DATA_CREATE, METAFIELDS_DATA_SAVE, METAFIELDS_DATA_SELECT, METAFIELDS_DATA_UPDATE,
     NAMESPACE, SAVE_OWNER_ID
 } from "./_const";
 import {AppActions} from "../";
@@ -15,6 +15,7 @@ import {AppActions} from "../";
  * @private
  */
 export const _reducers = function ( state = INITIAL_STATE, action ) {
+
     if ( action.type === SAVE_OWNER_ID ){
         const oldState = { ...state }
         const owner = oldState.OWNER_IDS.find( owner => owner.id === action.payload.id )
@@ -36,11 +37,11 @@ export const _reducers = function ( state = INITIAL_STATE, action ) {
         const originMetafield = oldState.METAFIELDS.find( metafield => metafield[ NAMESPACE ] === namespace && metafield[ KEY ] === key );
 
         if ( !!originMetafield ) {
-            AppActions.Toast.Error( "Metafield exists, can not create" );
+            AppActions.Toast.Error( { content: "Metafield exists, can not create" } );
             return oldState
         }
         const newMetafield_create = METAFIELD_TEMPLATE( action.payload );
-        AppActions.Toast.Message( "New Metafield created" );
+        AppActions.Toast.Message( { content: "New Metafield created" } );
         return {
             ...oldState,
             METAFIELDS : [ ...oldState.METAFIELDS, { ...newMetafield_create } ]
@@ -53,7 +54,7 @@ export const _reducers = function ( state = INITIAL_STATE, action ) {
         const originMetafield = oldState.METAFIELDS.find(metafield => metafield[NAMESPACE] === namespace && metafield[KEY] === key);
 
         if (!originMetafield) {
-            AppActions.Toast.Error("Metafield not exists, can not update");
+            AppActions.Toast.Error({ content: "Metafield not exists, can not update" });
             return oldState
         }
 
@@ -63,7 +64,7 @@ export const _reducers = function ( state = INITIAL_STATE, action ) {
         };
 
         const newMetafieldsState = oldState.METAFIELDS.filter(metafield => metafield[NAMESPACE] !== namespace && metafield[KEY] !== key)
-        AppActions.Toast.Message("Metafield updated successful");
+        AppActions.Toast.Message({ content: "Metafield updated successful" });
         return {
             ...oldState,
             METAFIELDS: [...newMetafieldsState, {...newMetafield_update}]

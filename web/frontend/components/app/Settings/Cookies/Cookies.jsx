@@ -1,4 +1,4 @@
-import {useCallback, useMemo, useState} from "react";
+import {useCallback, useEffect, useMemo, useState} from "react";
 import {Button, Card, ResourceList, ResourceItem, Text, Modal, Stack, TextField, Select} from "@shopify/polaris";
 import LOGGER from "../../Helpers/Logger";
 import {Toast} from "@shopify/app-bridge-react";
@@ -7,11 +7,11 @@ import sort from "../../Helpers/sort";
 import { cookieSchema } from "./cookieDataSchema";
 import RessourcesCookieListSkeleton from "./RessourcesCookieListSkeleton";
 import {useDispatch} from "react-redux";
+import {AppActions} from "../../../../ReduxStoreProvider";
 
 export default function Cookies () {
 
     const [ queryLoading, setQueryLoading ] = useState( true );
-    const [ toastProps, setToastProps ] = useState( { content : null } );
     const [ ressourcesCookiesList, setRessourcesCookiesList ] = useState( [] );
     const [ ressourcesCookiesListSorted, setRessourcesCookiesListSorted ] = useState( [] );
     const [ ressourcesCookiesMetafield, setRessourcesCookiesMetafield ] = useState();
@@ -55,12 +55,6 @@ export default function Cookies () {
      * Cookie Data Schema
      */
     const cookieDataSchema = cookieSchema( ressourcesProviderList, Expires, CookieTypes );
-
-    const toastMarkup = function () {
-        return toastProps.content && (
-            <Toast {...toastProps} onDismiss={() => setToastProps({content: null})}/>
-        );
-    }
 
     const getDataList = function ( cookieList, key) {
         const propValues = [];
@@ -164,19 +158,26 @@ export default function Cookies () {
             </ResourceItem>
         )
     }
-    const createCookieList = function ( metafield ) {
 
-        if ( !!metafield ) {
-            const metafieldCopy = JSON.parse( JSON.stringify( metafield) )
-            const metafieldData = JSON.parse( metafieldCopy.value );
+    const [ metafieldObject, setMetafieldObject ] = useState();
+
+    const createCookieList = function ( data ) {
+        if ( !!data ) {
+            setMetafieldObject( data )
+
+            AppActions.Toast.Dev.Message( "Metafield loaded!" )
+
+            const value = data.VALUE || data.value;
+            const metafieldData = JSON.parse( value );
             const ressourceList = [];
 
             for (const [name, value] of Object.entries( metafieldData )) {
                 value["name"] = name;
                 ressourceList.push(value)
             }
+
             setRessourcesCookiesList( ressourceList );
-            setRessourcesCookiesMetafield( metafieldCopy );
+            setRessourcesCookiesMetafield( data );
             setQueryLoading( !queryLoading );
         }
     }
@@ -188,11 +189,12 @@ export default function Cookies () {
         setRessourcesCookiesListSorted( sortedList.map( cookie => cookie ) );
     }, [ ressourcesCookiesList ])
 
-    const cookieMetafield = MetafieldController({
-        namespace : 'bc_cookie',
-        key : "bc_cookie_list",
-        callback : createCookieList
-    });
+    useEffect(() =>{
+        AppActions.DataActions.METAFIELDS.select({
+            namespace: 'bc_cookie',
+            key: "bc_cookie_list"
+        } ).then( metafieldData => createCookieList( metafieldData ) )
+    },[])
 
     /*
     useAppQuery({
@@ -238,7 +240,7 @@ export default function Cookies () {
     });
     */
 
-    const dispatch = useDispatch();
+    //const dispatch = useDispatch();
 
     const handleNameModalInputChange = useCallback( newValue => setModalNameCookie( newValue ), [])
     const handleDescriptionChange = useCallback( newValue => setModalDescriptionCookie( newValue ), [])
@@ -382,7 +384,6 @@ export default function Cookies () {
 
     return (
         <>
-            {toastMarkup}
             {cookieEditMarkup}
             <Card>
                 <Card.Section>

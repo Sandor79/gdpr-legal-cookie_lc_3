@@ -2,6 +2,28 @@ import {store} from "../ReduxStoreProvider";
 import { Failure, setPageLoading as _setPageLoading, setToken as _setToken } from "../AppProvider/_actions";
 import { useAppBridge, useToast } from "@shopify/app-bridge-react";
 
+const getToast = function ( toastProps, isError ) {
+    let newToast;
+    const toast = {
+        content: null,
+        isError: null,
+        duration: null,
+        onDismiss: null,
+        action: null
+    }
+
+    if ( Object.prototype.toString.call( toastProps) === "[object String]"){
+        newToast = {
+            ...toast,
+            content: toastProps,
+            isError
+        }
+    } else {
+        newToast = { ...toast, toastProps, isError }
+    }
+    return newToast;
+}
+
 /**
  * @type AppActionsObject
  */
@@ -31,15 +53,14 @@ export const _AppActions = {
          * @returns {{payload: Toast, type: string}}
          */
         Message : toastProps => {
-            setToastMessage(toastProps);
+            setToastMessage( getToast( toastProps) );
         },
         /**
          * @param {Toast} toastProps
          * @returns {{payload: Toast, type: string}}
          */
         Error : toastProps => {
-            toastProps.isError = true;
-            setToastMessage(toastProps);
+            setToastMessage( getToast( toastProps, true ) );
         },
         Dev : {
             /**
@@ -48,7 +69,7 @@ export const _AppActions = {
              */
             Message : toastProps => {
                 if ( mode !== "Production" ) {
-                    setToastMessage(toastProps);
+                    setToastMessage( getToast( toastProps) );
                 }
             },
             /**
@@ -57,8 +78,7 @@ export const _AppActions = {
              */
             Error : toastProps => {
                 if ( mode !== "Production" ) {
-                    toastProps.isError = true;
-                    setToastMessage(toastProps);
+                    setToastMessage( getToast( toastProps, true ) );
                 }
             }
         }

@@ -5,9 +5,11 @@ const PageTemplate = lazy(() => import( "../../components/app/Templates/PageTemp
 const SettingsTemplate = lazy(() => import( "../../components/app/Settings" ));
 
 export default function Settings () {
+    const pageInfo = getPageInfo( "settings" )
+
     return (
         <Suspense fallback={(<div>Loading...</div>)}>
-            <PageTemplate { ...getPageInfo( "settings" ) }>
+            <PageTemplate { ...pageInfo }>
                 <SettingsTemplate/>
             </PageTemplate>
         </Suspense>

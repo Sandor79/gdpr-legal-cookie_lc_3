@@ -32,7 +32,7 @@ const WebRoutes = [
     },
     {
         id: "settings",
-        title: "",
+        title: "Settings",
         breadcrumbs: [{ content : "Dashboard", url : "/"}],
         label: "Settings",
         destination: "/settings"

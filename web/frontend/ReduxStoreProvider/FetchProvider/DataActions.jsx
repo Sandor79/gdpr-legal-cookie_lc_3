@@ -1,10 +1,10 @@
 import {store} from "../ReduxStoreProvider";
 import {
     metafieldsDataCreate, metafieldsDataDelete, metafieldsDataSave,
-    metafieldsDataSelect,
     metafieldsDataUpdate,
     _saveOwnerId, themesDataCreate, themesDataDelete, themesDataSave, themesDataSelect, themesDataUpdate
 } from "./_actions";
+import {AppActions} from "../index";
 
 /**
  * @type FetchProviderActions
@@ -35,10 +35,29 @@ export const _DataActions = {
         },
         /**
          * @param { Metafield } value
-         * @returns {{ payload: Metafield, type: string }}
+         * @returns <T>|null
          */
-        select : value => {
-            store.dispatch(metafieldsDataSelect(value))
+        select : async ({ namespace, key }) => {
+
+            const state = store.getState()
+            const metafield = state.DATA.METAFIELDS.find( metafield => metafield.NAMESPACE === namespace && metafield.KEY === key )
+            if ( !!metafield ) {
+                return metafield
+            } else {
+                const [ data, error ] = await AppActions.DataActions.Fetch(`/api/metafield/namespace/${ namespace }/key/${ key }`)
+                console.log( "select", { data, error } )
+
+                if ( !!error ) {
+                    AppActions.Toast.Error( { content: "Metafield loading failed" } )
+                    return null;
+                } else if( !!data ) {
+                    data.namespace = namespace;
+                    store.dispatch( metafieldsDataCreate( data ))
+                    return data;
+                }
+
+            }
+            //store.dispatch(metafieldsDataSelect(value))
         },
         /**
          * @param { Metafield } value

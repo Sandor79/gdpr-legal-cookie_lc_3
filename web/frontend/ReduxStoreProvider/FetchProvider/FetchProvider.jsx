@@ -1,15 +1,15 @@
-import {useAppQuery} from "../../hooks";
+import {useAppQuery, useAuthenticatedFetch} from "../../hooks";
 import {AppActions} from "../";
 import {useEffect, useState} from "react";
 
 export const FetchProvider = function () {
-    const [ ownerIdLoaded, setOwnerIdLoaded ] = useState( false )
+    const [ loading, setLoading ] = useState( false )
 
     const {data} = useAppQuery({
         url: `/api/metafield/owner-id/shop`,
         reactQueryOptions: {
             onSuccess() {
-                setOwnerIdLoaded( true );
+                setLoading( true );
             }
         }
     });
@@ -19,7 +19,29 @@ export const FetchProvider = function () {
             AppActions.Toast.Dev.Message({content: "owner id loaded"})
             AppActions.DataActions.saveOwnerId({owner: "shop", id: data.id})
         }
-    }, [ ownerIdLoaded ])
+    }, [ loading ])
+
+    const fetch = useAuthenticatedFetch();
+    AppActions.DataActions.Fetch = async function ( url, type = "GET", postData ) {
+
+        let options, response;
+
+        if ( type === "POST" && !!postData ) {
+            options = {
+                method: type,
+                body: JSON.stringify( postData )
+            }
+        }
+        response = await fetch( url, options )
+
+        if ( response.ok ) {
+            const data = await response.json()
+            return [ data, null ]
+        } else {
+            const error = await response.error()
+            return [ null, error ]
+        }
+    }
 
     return (
         <></>
